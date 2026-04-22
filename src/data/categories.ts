@@ -1,0 +1,58 @@
+export const CATEGORIES = [
+  {
+    name: "RC Vehicles",
+    slug: "rc-vehicles",
+    description: "Remote control helicopters, drones, cars, and boats",
+    icon: "Plane",
+    display_order: 1,
+  },
+  {
+    name: "Desk Gadgets",
+    slug: "desk-gadgets",
+    description: "Newton's cradle, executive toys, and desk entertainment",
+    icon: "Lightbulb",
+    display_order: 2,
+  },
+  {
+    name: "Fidget Gear",
+    slug: "fidget-gear",
+    description: "Spinners, cubes, magnetic putty, and stress relievers",
+    icon: "Hand",
+    display_order: 3,
+  },
+  {
+    name: "Tech Toys",
+    slug: "tech-toys",
+    description: "Robots, coding kits, VR accessories, and smart gadgets",
+    icon: "Cpu",
+    display_order: 4,
+  },
+  {
+    name: "Board Games",
+    slug: "board-games",
+    description: "Strategy, party, and classic board games for adults",
+    icon: "Dice5",
+    display_order: 5,
+  },
+  {
+    name: "Puzzles",
+    slug: "puzzles",
+    description: "3D puzzles, mechanical puzzles, and brain teasers",
+    icon: "Puzzle",
+    display_order: 6,
+  },
+  {
+    name: "Collectibles",
+    slug: "collectibles",
+    description: "Action figures, model kits, vinyl toys, and display pieces",
+    icon: "Trophy",
+    display_order: 7,
+  },
+  {
+    name: "Outdoor Gear",
+    slug: "outdoor-gear",
+    description: "Nerf blasters, water guns, kites, and adventure gear",
+    icon: "Trees",
+    display_order: 8,
+  },
+] as const;
