@@ -55,13 +55,11 @@ export function PinEntry() {
             <Input
               id="pin"
               type="password"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              maxLength={6}
+              maxLength={20}
               value={pin}
-              onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
-              placeholder="Enter 4-6 digit PIN"
-              className="text-center text-2xl tracking-[0.5em] mt-2"
+              onChange={(e) => setPin(e.target.value)}
+              placeholder="Enter admin password"
+              className="text-center text-lg mt-2"
               autoFocus
             />
           </div>

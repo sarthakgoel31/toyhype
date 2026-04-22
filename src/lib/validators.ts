@@ -1,7 +1,7 @@
 import { z } from "zod/v4";
 
 export const adminPinSchema = z.object({
-  pin: z.string().min(4).max(6).regex(/^\d+$/, "PIN must be digits only"),
+  pin: z.string().min(4).max(20),
 });
 
 export const checkoutSchema = z.object({
