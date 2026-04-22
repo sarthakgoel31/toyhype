@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createOrderSchema } from "@/lib/validators";
 import { generateOrderNumber, getShippingFee } from "@/lib/order-utils";
+import { sendOrderConfirmation, sendAdminNotification } from "@/lib/email";
+import type { Order, OrderItem } from "@/types/database";
 
 export async function POST(request: Request) {
   try {
@@ -16,6 +18,8 @@ export async function POST(request: Request) {
     }
 
     const { items, customer } = result.data;
+    const paymentMethod = body.payment_method || "online";
+    const isCOD = paymentMethod === "cod";
     const supabase = createAdminClient();
 
     // Fetch product prices server-side to prevent tampering
@@ -53,10 +57,11 @@ export async function POST(request: Request) {
     }, 0);
 
     const shippingFee = getShippingFee(subtotal);
-    const totalAmount = subtotal + shippingFee;
+    const codFee = isCOD ? 4900 : 0; // Rs 49 COD charge
+    const totalAmount = subtotal + shippingFee + codFee;
     const orderNumber = generateOrderNumber();
 
-    // Create order
+    // Create order — COD orders are confirmed immediately
     const { data: order, error: orderError } = await supabase
       .from("orders")
       .insert({
@@ -66,9 +71,11 @@ export async function POST(request: Request) {
         customer_phone: customer.customer_phone,
         shipping_address: customer.shipping_address,
         subtotal,
-        shipping_fee: shippingFee,
+        shipping_fee: shippingFee + codFee,
         total_amount: totalAmount,
-        status: "PAYMENT_PENDING",
+        status: isCOD ? "CONFIRMED" : "PAYMENT_PENDING",
+        payment_status: isCOD ? "cod" : "pending",
+        confirmed_at: isCOD ? new Date().toISOString() : null,
       })
       .select("id")
       .single();
@@ -110,6 +117,23 @@ export async function POST(request: Request) {
       if (!success) {
         console.error(`Failed to decrement stock for ${item.productId}`);
       }
+    }
+
+    // Send confirmation email for COD orders immediately
+    if (isCOD) {
+      const confirmedOrder = {
+        id: order.id,
+        order_number: orderNumber,
+        customer_name: customer.customer_name,
+        customer_email: customer.customer_email,
+        customer_phone: customer.customer_phone,
+        shipping_address: customer.shipping_address,
+        total_amount: totalAmount,
+        status: "CONFIRMED",
+      } as Order;
+
+      sendOrderConfirmation(confirmedOrder, orderItems as OrderItem[]);
+      sendAdminNotification(confirmedOrder, orderItems as OrderItem[]);
     }
 
     return NextResponse.json({

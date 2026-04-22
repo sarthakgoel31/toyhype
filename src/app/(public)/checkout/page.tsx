@@ -8,19 +8,22 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCart } from "@/components/cart/cart-provider";
-import { CartItemRow } from "@/components/cart/cart-item-row";
 import { formatPrice, getShippingFee } from "@/lib/order-utils";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, Lock } from "lucide-react";
+import { ArrowLeft, Lock, Banknote, CreditCard } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+
+type PaymentMethod = "online" | "cod";
 
 export default function CheckoutPage() {
   const { items, subtotal, itemCount, clearCart } = useCart();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("online");
   const shippingFee = getShippingFee(subtotal);
-  const total = subtotal + shippingFee;
+  const codFee = paymentMethod === "cod" ? 4900 : 0; // Rs 49 COD charge
+  const total = subtotal + shippingFee + codFee;
 
   const [form, setForm] = useState({
     customer_name: "",
@@ -36,44 +39,57 @@ export default function CheckoutPage() {
   const update = (field: string, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
 
-  const handlePayment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (items.length === 0) return;
-    setLoading(true);
-
-    try {
-      // Step 1: Create order
-      const orderRes = await fetch("/api/orders/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items: items.map((i) => ({
-            productId: i.productId,
-            quantity: i.quantity,
-          })),
-          customer: {
-            customer_name: form.customer_name,
-            customer_email: form.customer_email,
-            customer_phone: form.customer_phone,
-            shipping_address: {
-              line1: form.line1,
-              line2: form.line2 || undefined,
-              city: form.city,
-              state: form.state,
-              pincode: form.pincode,
-            },
+  const createOrder = async () => {
+    const orderRes = await fetch("/api/orders/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        items: items.map((i) => ({
+          productId: i.productId,
+          quantity: i.quantity,
+        })),
+        customer: {
+          customer_name: form.customer_name,
+          customer_email: form.customer_email,
+          customer_phone: form.customer_phone,
+          shipping_address: {
+            line1: form.line1,
+            line2: form.line2 || undefined,
+            city: form.city,
+            state: form.state,
+            pincode: form.pincode,
           },
-        }),
-      });
+        },
+        payment_method: paymentMethod,
+      }),
+    });
 
-      if (!orderRes.ok) {
-        const err = await orderRes.json();
-        throw new Error(err.error || "Failed to create order");
-      }
+    if (!orderRes.ok) {
+      const err = await orderRes.json();
+      throw new Error(err.error || "Failed to create order");
+    }
 
-      const { orderId, totalAmount } = await orderRes.json();
+    return await orderRes.json();
+  };
 
-      // Step 2: Create Razorpay order
+  const handleCOD = async () => {
+    setLoading(true);
+    try {
+      const { orderId } = await createOrder();
+      clearCart();
+      router.push(`/order/${orderId}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOnlinePayment = async () => {
+    setLoading(true);
+    try {
+      const { orderId, totalAmount } = await createOrder();
+
       const rzpRes = await fetch("/api/razorpay/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -81,10 +97,8 @@ export default function CheckoutPage() {
       });
 
       if (!rzpRes.ok) throw new Error("Failed to create payment");
-
       const { razorpayOrderId } = await rzpRes.json();
 
-      // Step 3: Open Razorpay checkout
       const script = document.createElement("script");
       script.src = "https://checkout.razorpay.com/v1/checkout.js";
       script.onload = () => {
@@ -142,6 +156,17 @@ export default function CheckoutPage() {
     }
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (items.length === 0) return;
+
+    if (paymentMethod === "cod") {
+      await handleCOD();
+    } else {
+      await handleOnlinePayment();
+    }
+  };
+
   if (items.length === 0) {
     return (
       <>
@@ -161,10 +186,10 @@ export default function CheckoutPage() {
     <>
       <Navbar />
       <main className="flex-1">
-        <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto px-6 py-10">
           <Link
             href="/cart"
-            className="inline-flex items-center gap-1 text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] mb-6"
+            className="inline-flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] mb-8"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Cart
@@ -172,7 +197,7 @@ export default function CheckoutPage() {
 
           <h1 className="text-2xl font-bold font-heading mb-8">Checkout</h1>
 
-          <form onSubmit={handlePayment}>
+          <form onSubmit={handleSubmit}>
             <div className="grid md:grid-cols-5 gap-8">
               {/* Form */}
               <div className="md:col-span-3 space-y-6">
@@ -221,6 +246,45 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                 </div>
+
+                {/* Payment Method */}
+                <div className="bg-white rounded-2xl border border-[var(--border-subtle)] p-6 space-y-4">
+                  <h3 className="font-semibold">Payment Method</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod("online")}
+                      className={cn(
+                        "flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left",
+                        paymentMethod === "online"
+                          ? "border-[var(--accent-blue)] bg-blue-50"
+                          : "border-[var(--border-subtle)] hover:border-[var(--text-muted)]"
+                      )}
+                    >
+                      <CreditCard className={cn("w-5 h-5", paymentMethod === "online" ? "text-[var(--accent-blue)]" : "text-[var(--text-muted)]")} />
+                      <div>
+                        <p className="font-semibold text-sm">Pay Online</p>
+                        <p className="text-xs text-[var(--text-muted)]">UPI, Card, Net Banking</p>
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod("cod")}
+                      className={cn(
+                        "flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left",
+                        paymentMethod === "cod"
+                          ? "border-[var(--accent-green)] bg-green-50"
+                          : "border-[var(--border-subtle)] hover:border-[var(--text-muted)]"
+                      )}
+                    >
+                      <Banknote className={cn("w-5 h-5", paymentMethod === "cod" ? "text-[var(--accent-green)]" : "text-[var(--text-muted)]")} />
+                      <div>
+                        <p className="font-semibold text-sm">Cash on Delivery</p>
+                        <p className="text-xs text-[var(--text-muted)]">+Rs 49 COD charge</p>
+                      </div>
+                    </button>
+                  </div>
+                </div>
               </div>
 
               {/* Order Summary */}
@@ -248,6 +312,12 @@ export default function CheckoutPage() {
                         {shippingFee === 0 ? "FREE" : formatPrice(shippingFee)}
                       </span>
                     </div>
+                    {paymentMethod === "cod" && (
+                      <div className="flex justify-between">
+                        <span className="text-[var(--text-secondary)]">COD Charge</span>
+                        <span>{formatPrice(codFee)}</span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="border-t border-[var(--border-subtle)] pt-3 flex justify-between font-bold text-lg">
@@ -256,12 +326,21 @@ export default function CheckoutPage() {
                   </div>
 
                   <Button type="submit" className="w-full rounded-xl" size="lg" disabled={loading}>
-                    <Lock className="w-4 h-4 mr-2" />
-                    {loading ? "Processing..." : `Pay ${formatPrice(total)}`}
+                    {paymentMethod === "online" ? (
+                      <>
+                        <Lock className="w-4 h-4 mr-2" />
+                        {loading ? "Processing..." : `Pay ${formatPrice(total)}`}
+                      </>
+                    ) : (
+                      <>
+                        <Banknote className="w-4 h-4 mr-2" />
+                        {loading ? "Placing Order..." : `Place COD Order — ${formatPrice(total)}`}
+                      </>
+                    )}
                   </Button>
 
                   <p className="text-xs text-center text-[var(--text-muted)]">
-                    Secured by Razorpay
+                    {paymentMethod === "online" ? "Secured by Razorpay" : "Pay cash when you receive the product"}
                   </p>
                 </div>
               </div>

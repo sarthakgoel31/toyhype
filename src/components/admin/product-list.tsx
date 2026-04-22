@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { formatPrice } from "@/lib/order-utils";
 import type { Product, Category } from "@/types/database";
-import { Plus, Edit2, Eye, EyeOff, Star } from "lucide-react";
+import { Plus, Edit2, Eye, EyeOff, Star, Upload, X, Crown } from "lucide-react";
 import { toast } from "sonner";
 
 export function AdminProductList() {
@@ -18,6 +19,8 @@ export function AdminProductList() {
   const [loading, setLoading] = useState(true);
   const [editProduct, setEditProduct] = useState<Partial<Product> | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchProducts();
@@ -39,6 +42,59 @@ export function AdminProductList() {
       }
     } catch {}
     setLoading(false);
+  }
+
+  async function uploadImage(file: File) {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fetch("/api/admin/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!res.ok) throw new Error("Upload failed");
+    const { url } = await res.json();
+    return url as string;
+  }
+
+  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploading(true);
+    try {
+      const urls: string[] = [];
+      for (const file of Array.from(files)) {
+        const url = await uploadImage(file);
+        urls.push(url);
+      }
+
+      const currentImages = editProduct?.images || [];
+      setEditProduct({
+        ...editProduct,
+        images: [...currentImages, ...urls],
+      });
+      toast.success(`${urls.length} image${urls.length > 1 ? "s" : ""} uploaded`);
+    } catch {
+      toast.error("Failed to upload images");
+    }
+    setUploading(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  function removeImage(index: number) {
+    const images = [...(editProduct?.images || [])];
+    images.splice(index, 1);
+    setEditProduct({ ...editProduct, images });
+  }
+
+  function setHeroImage(index: number) {
+    const images = [...(editProduct?.images || [])];
+    const [hero] = images.splice(index, 1);
+    images.unshift(hero);
+    setEditProduct({ ...editProduct, images });
+    toast.success("Hero image set");
   }
 
   async function saveProduct(e: React.FormEvent) {
@@ -112,7 +168,7 @@ export function AdminProductList() {
               Add Product
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editProduct?.id ? "Edit Product" : "New Product"}</DialogTitle>
             </DialogHeader>
@@ -154,6 +210,72 @@ export function AdminProductList() {
                   ))}
                 </select>
               </div>
+
+              {/* Image Upload */}
+              <div>
+                <Label>Product Images</Label>
+                <p className="text-xs text-[var(--text-muted)] mt-0.5 mb-2">First image is the hero. Click the crown to change hero.</p>
+
+                {/* Image grid */}
+                {(editProduct?.images?.length ?? 0) > 0 && (
+                  <div className="grid grid-cols-4 gap-2 mb-3">
+                    {editProduct?.images?.map((url, i) => (
+                      <div key={i} className={`relative aspect-square rounded-lg overflow-hidden border-2 ${i === 0 ? "border-[var(--accent-blue)]" : "border-transparent"}`}>
+                        <Image
+                          src={url}
+                          alt={`Product image ${i + 1}`}
+                          fill
+                          className="object-cover"
+                        />
+                        {i === 0 && (
+                          <div className="absolute top-1 left-1 bg-[var(--accent-blue)] text-white rounded-full p-0.5">
+                            <Crown className="w-3 h-3" />
+                          </div>
+                        )}
+                        <div className="absolute top-1 right-1 flex gap-1">
+                          {i !== 0 && (
+                            <button
+                              type="button"
+                              onClick={() => setHeroImage(i)}
+                              className="bg-white/90 rounded-full p-1 hover:bg-white"
+                              title="Set as hero image"
+                            >
+                              <Crown className="w-3 h-3 text-[var(--accent-blue)]" />
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => removeImage(i)}
+                            className="bg-white/90 rounded-full p-1 hover:bg-white"
+                          >
+                            <X className="w-3 h-3 text-[var(--accent-red)]" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  {uploading ? "Uploading..." : "Upload Images"}
+                </Button>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>Price (Rs)</Label>
@@ -165,14 +287,23 @@ export function AdminProductList() {
                   />
                 </div>
                 <div>
-                  <Label>Stock</Label>
+                  <Label>Compare Price (Rs)</Label>
                   <Input
                     type="number"
-                    required
-                    value={editProduct?.stock_quantity || 0}
-                    onChange={(e) => setEditProduct({ ...editProduct, stock_quantity: Number(e.target.value) })}
+                    placeholder="Original price"
+                    value={(editProduct?.compare_at_price || 0) / 100 || ""}
+                    onChange={(e) => setEditProduct({ ...editProduct, compare_at_price: e.target.value ? Math.round(Number(e.target.value) * 100) : null })}
                   />
                 </div>
+              </div>
+              <div>
+                <Label>Stock Quantity</Label>
+                <Input
+                  type="number"
+                  required
+                  value={editProduct?.stock_quantity || 0}
+                  onChange={(e) => setEditProduct({ ...editProduct, stock_quantity: Number(e.target.value) })}
+                />
               </div>
               <div className="flex gap-4">
                 <label className="flex items-center gap-2 text-sm">
@@ -181,7 +312,7 @@ export function AdminProductList() {
                     checked={editProduct?.is_featured || false}
                     onChange={(e) => setEditProduct({ ...editProduct, is_featured: e.target.checked })}
                   />
-                  Featured
+                  Featured on homepage
                 </label>
                 <label className="flex items-center gap-2 text-sm">
                   <input
@@ -201,8 +332,14 @@ export function AdminProductList() {
       <div className="space-y-2">
         {products.map((product) => (
           <div key={product.id} className="flex items-center gap-3 bg-white rounded-xl border border-[var(--border-subtle)] p-3">
-            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center text-xl shrink-0">
-              🎮
+            <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0">
+              {product.images?.[0] ? (
+                <Image src={product.images[0]} alt={product.name} width={48} height={48} className="object-cover w-full h-full" />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center text-xl">
+                  🎮
+                </div>
+              )}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
@@ -215,6 +352,8 @@ export function AdminProductList() {
                 <span>{categories.find((c) => c.id === product.category_id)?.name || "No category"}</span>
                 <span>&middot;</span>
                 <span>{product.stock_quantity} in stock</span>
+                <span>&middot;</span>
+                <span>{product.images?.length || 0} imgs</span>
                 {product.stock_quantity < 5 && (
                   <Badge variant="outline" className="text-[var(--accent-red)] border-[var(--accent-red)] text-xs">
                     Low
