@@ -13,9 +13,12 @@ export async function POST(request: Request) {
     const supabase = createAdminClient();
 
     // Generate unique filename
-    const ext = file.name.split(".").pop() || "jpg";
+    // Support both images and videos
+    const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+    const isVideoFile = ["mp4", "webm", "mov", "avi"].includes(ext);
+    const folder = isVideoFile ? "videos" : "products";
     const filename = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
-    const path = `products/${filename}`;
+    const path = `${folder}/${filename}`;
 
     const buffer = Buffer.from(await file.arrayBuffer());
 

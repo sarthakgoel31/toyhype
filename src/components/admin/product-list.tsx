@@ -10,8 +10,13 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { formatPrice } from "@/lib/order-utils";
 import type { Product, Category } from "@/types/database";
-import { Plus, Edit2, Eye, EyeOff, Star, Upload, X, Crown } from "lucide-react";
+import { Plus, Edit2, Eye, EyeOff, Star, Upload, X, Crown, Play } from "lucide-react";
 import { toast } from "sonner";
+
+function isVideo(url: string): boolean {
+  const lower = url.toLowerCase();
+  return [".mp4", ".webm", ".mov", ".avi"].some((ext) => lower.includes(ext));
+}
 
 export function AdminProductList() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -211,22 +216,28 @@ export function AdminProductList() {
                 </select>
               </div>
 
-              {/* Image Upload */}
+              {/* Media Upload */}
               <div>
-                <Label>Product Images</Label>
-                <p className="text-xs text-[var(--text-muted)] mt-0.5 mb-2">First image is the hero. Click the crown to change hero.</p>
+                <Label>Product Media</Label>
+                <p className="text-xs text-[var(--text-muted)] mt-0.5 mb-2">Images + videos. First item is the hero. Click crown to change.</p>
 
                 {/* Image grid */}
                 {(editProduct?.images?.length ?? 0) > 0 && (
                   <div className="grid grid-cols-4 gap-2 mb-3">
                     {editProduct?.images?.map((url, i) => (
                       <div key={i} className={`relative aspect-square rounded-lg overflow-hidden border-2 ${i === 0 ? "border-[var(--accent-blue)]" : "border-transparent"}`}>
-                        <Image
-                          src={url}
-                          alt={`Product image ${i + 1}`}
-                          fill
-                          className="object-cover"
-                        />
+                        {isVideo(url) ? (
+                          <div className="w-full h-full bg-gray-900 flex items-center justify-center">
+                            <Play className="w-6 h-6 text-white fill-white" />
+                          </div>
+                        ) : (
+                          <Image
+                            src={url}
+                            alt={`Product image ${i + 1}`}
+                            fill
+                            className="object-cover"
+                          />
+                        )}
                         {i === 0 && (
                           <div className="absolute top-1 left-1 bg-[var(--accent-blue)] text-white rounded-full p-0.5">
                             <Crown className="w-3 h-3" />
@@ -259,7 +270,7 @@ export function AdminProductList() {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept="image/*,video/mp4,video/webm,video/quicktime"
                   multiple
                   onChange={handleFileSelect}
                   className="hidden"
@@ -272,7 +283,7 @@ export function AdminProductList() {
                   disabled={uploading}
                 >
                   <Upload className="w-4 h-4 mr-2" />
-                  {uploading ? "Uploading..." : "Upload Images"}
+                  {uploading ? "Uploading..." : "Upload Images / Videos"}
                 </Button>
               </div>
 
@@ -353,7 +364,7 @@ export function AdminProductList() {
                 <span>&middot;</span>
                 <span>{product.stock_quantity} in stock</span>
                 <span>&middot;</span>
-                <span>{product.images?.length || 0} imgs</span>
+                <span>{product.images?.length || 0} media</span>
                 {product.stock_quantity < 5 && (
                   <Badge variant="outline" className="text-[var(--accent-red)] border-[var(--accent-red)] text-xs">
                     Low

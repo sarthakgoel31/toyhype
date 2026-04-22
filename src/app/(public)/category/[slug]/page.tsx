@@ -1,46 +1,40 @@
-"use client";
-
-import { use } from "react";
+import { createPublicClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { BottomTabs } from "@/components/layout/bottom-tabs";
 import { ProductGrid } from "@/components/product/product-grid";
-import { SEED_PRODUCTS } from "@/data/seed";
-import { CATEGORIES } from "@/data/categories";
-import type { Product } from "@/types/database";
+import type { Product, Category } from "@/types/database";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
-export default function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = use(params);
-  const category = CATEGORIES.find((c) => c.slug === slug);
+export const dynamic = "force-dynamic";
 
-  if (!category) {
-    notFound();
-  }
+export default async function CategoryPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const supabase = createPublicClient();
 
-  const products: Product[] = SEED_PRODUCTS
-    .filter((p) => p.category_slug === slug)
-    .map((p, i) => ({
-      id: `seed-cat-${slug}-${i}`,
-      name: p.name,
-      slug: p.slug,
-      description: p.description,
-      price: p.price,
-      compare_at_price: p.compare_at_price || null,
-      category_id: null,
-      images: p.images,
-      stock_quantity: p.stock_quantity,
-      is_active: true,
-      is_featured: p.is_featured || false,
-      specs: p.specs as unknown as Record<string, string>,
-      rating: p.rating,
-      review_count: p.review_count,
-      weight_grams: null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    }));
+  // Fetch category by slug
+  const { data: category } = await supabase
+    .from("categories")
+    .select("*")
+    .eq("slug", slug)
+    .eq("is_active", true)
+    .single();
+
+  if (!category) notFound();
+
+  // Fetch products in this category
+  const { data: products } = await supabase
+    .from("products")
+    .select("*, category:categories(*)")
+    .eq("category_id", (category as Category).id)
+    .eq("is_active", true)
+    .order("created_at", { ascending: false });
 
   return (
     <>
@@ -55,10 +49,14 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
             All Toys
           </Link>
 
-          <h1 className="text-3xl font-bold font-heading mb-2">{category.name}</h1>
-          <p className="text-[var(--text-secondary)] mb-8">{category.description}</p>
+          <h1 className="text-3xl font-bold font-heading mb-2">
+            {(category as Category).name}
+          </h1>
+          <p className="text-[var(--text-secondary)] mb-8">
+            {(category as Category).description}
+          </p>
 
-          <ProductGrid products={products} />
+          <ProductGrid products={(products || []) as Product[]} />
         </div>
       </main>
       <Footer />

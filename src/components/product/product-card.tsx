@@ -11,12 +11,19 @@ import { formatPrice } from "@/lib/order-utils";
 import type { Product } from "@/types/database";
 import { toast } from "sonner";
 
+function isVideo(url: string): boolean {
+  const lower = url.toLowerCase();
+  return [".mp4", ".webm", ".mov", ".avi"].some((ext) => lower.includes(ext));
+}
+
 export function ProductCard({ product }: { product: Product }) {
   const { addItem, isInCart } = useCart();
   const discount = product.compare_at_price
     ? Math.round((1 - product.price / product.compare_at_price) * 100)
     : 0;
   const inCart = isInCart(product.id);
+  // Use first image (skip videos) for card thumbnail
+  const cardImage = product.images.find((u) => !isVideo(u)) || "";
 
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -26,7 +33,7 @@ export function ProductCard({ product }: { product: Product }) {
       name: product.name,
       price: product.price,
       compareAtPrice: product.compare_at_price || undefined,
-      image: product.images[0] || "",
+      image: cardImage,
       stockQuantity: product.stock_quantity,
       slug: product.slug,
     });
@@ -44,9 +51,9 @@ export function ProductCard({ product }: { product: Product }) {
       >
         {/* Image */}
         <div className="relative aspect-square bg-gradient-to-br from-blue-50 to-purple-50 overflow-hidden">
-          {product.images[0] ? (
+          {cardImage ? (
             <Image
-              src={product.images[0]}
+              src={cardImage}
               alt={product.name}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-300"
