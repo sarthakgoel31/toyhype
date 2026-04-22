@@ -10,8 +10,8 @@ export function CartItemRow({ item }: { item: CartItem }) {
   const { updateQuantity, removeItem } = useCart();
 
   return (
-    <div className="flex gap-3 p-3 bg-[var(--bg-warm)] rounded-xl">
-      <div className="w-16 h-16 rounded-lg bg-white flex items-center justify-center overflow-hidden shrink-0">
+    <div className="flex gap-4 p-4 bg-[var(--bg-warm)] rounded-xl">
+      <div className="w-20 h-20 rounded-xl bg-white flex items-center justify-center overflow-hidden shrink-0">
         {item.image ? (
           <Image
             src={item.image}
@@ -28,12 +28,12 @@ export function CartItemRow({ item }: { item: CartItem }) {
       </div>
 
       <div className="flex-1 min-w-0">
-        <h4 className="text-sm font-medium truncate">{item.name}</h4>
-        <p className="text-sm font-semibold text-[var(--accent-blue)] mt-0.5">
+        <h4 className="text-sm font-semibold truncate">{item.name}</h4>
+        <p className="text-sm font-bold text-[var(--accent-blue)] mt-1">
           {formatPrice(item.price)}
         </p>
 
-        <div className="flex items-center gap-2 mt-2">
+        <div className="flex items-center gap-2 mt-3">
           <Button
             variant="outline"
             size="icon"

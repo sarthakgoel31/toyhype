@@ -56,17 +56,17 @@ function ProductDetail({ seedProduct }: { seedProduct: (typeof SEED_PRODUCTS)[nu
     <>
       <Navbar />
       <main className="flex-1 pb-28 md:pb-0">
-        <div className="max-w-6xl mx-auto px-4 py-6">
+        <div className="max-w-6xl mx-auto px-6 py-10">
           {/* Breadcrumb */}
           <Link
             href="/products"
-            className="inline-flex items-center gap-1 text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] mb-6"
+            className="inline-flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] mb-8"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to All Toys
           </Link>
 
-          <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
+          <div className="grid md:grid-cols-2 gap-10 lg:gap-16">
             {/* Image */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -87,7 +87,7 @@ function ProductDetail({ seedProduct }: { seedProduct: (typeof SEED_PRODUCTS)[nu
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 }}
             >
-              <h1 className="text-2xl md:text-3xl font-bold font-heading text-[var(--text-primary)]">
+              <h1 className="text-3xl md:text-4xl font-extrabold font-heading text-[var(--text-primary)] tracking-tight">
                 {seedProduct.name}
               </h1>
 
@@ -128,16 +128,16 @@ function ProductDetail({ seedProduct }: { seedProduct: (typeof SEED_PRODUCTS)[nu
                 )}
               </div>
 
-              <p className="mt-4 text-[var(--text-secondary)] leading-relaxed">
+              <p className="mt-5 text-base text-[var(--text-secondary)] leading-relaxed">
                 {seedProduct.description}
               </p>
 
               {/* Specs */}
-              <div className="mt-6 grid grid-cols-2 gap-3">
+              <div className="mt-8 grid grid-cols-2 gap-3">
                 {Object.entries(seedProduct.specs).map(([key, value]) => (
-                  <div key={key} className="bg-[var(--bg-warm)] rounded-xl p-3">
-                    <p className="text-xs text-[var(--text-muted)]">{key}</p>
-                    <p className="text-sm font-semibold">{value}</p>
+                  <div key={key} className="bg-[var(--bg-warm)] rounded-xl p-4">
+                    <p className="text-xs text-[var(--text-muted)] uppercase tracking-wide">{key}</p>
+                    <p className="text-sm font-bold mt-1">{value}</p>
                   </div>
                 ))}
               </div>
@@ -183,17 +183,17 @@ function ProductDetail({ seedProduct }: { seedProduct: (typeof SEED_PRODUCTS)[nu
               </div>
 
               {/* Trust badges */}
-              <div className="mt-6 flex flex-wrap gap-4 text-xs text-[var(--text-muted)]">
-                <div className="flex items-center gap-1.5">
-                  <Truck className="w-4 h-4" />
+              <div className="mt-8 flex flex-wrap gap-5 text-sm text-[var(--text-muted)]">
+                <div className="flex items-center gap-2">
+                  <Truck className="w-4 h-4 text-[var(--accent-green)]" />
                   Free shipping above Rs 999
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <Shield className="w-4 h-4" />
+                <div className="flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-[var(--accent-blue)]" />
                   Secure checkout
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <Package className="w-4 h-4" />
+                <div className="flex items-center gap-2">
+                  <Package className="w-4 h-4 text-[var(--accent-orange)]" />
                   7-day returns
                 </div>
               </div>

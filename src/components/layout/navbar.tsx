@@ -29,16 +29,16 @@ export function Navbar() {
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-6">
-            <Link href="/products" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+            <Link href="/products" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
               All Toys
             </Link>
-            <Link href="/category/rc-vehicles" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+            <Link href="/category/rc-vehicles" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
               RC Vehicles
             </Link>
-            <Link href="/category/tech-toys" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+            <Link href="/category/tech-toys" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
               Tech Toys
             </Link>
-            <Link href="/category/board-games" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+            <Link href="/category/board-games" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
               Board Games
             </Link>
           </nav>
