@@ -2,6 +2,7 @@ import { HeroSection } from "@/components/home/hero-section";
 import { CategoryGrid } from "@/components/home/category-grid";
 import { FeaturedProducts } from "@/components/home/featured-products";
 import { ValueProps } from "@/components/home/value-props";
+import { TrustBanner } from "@/components/home/trust-banner";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 
@@ -13,6 +14,7 @@ export default function HomePage() {
         <HeroSection />
         <CategoryGrid />
         <FeaturedProducts />
+        <TrustBanner />
         <ValueProps />
       </main>
       <Footer />

@@ -8,19 +8,28 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { formatPrice } from "@/lib/order-utils";
-import type { Product } from "@/types/database";
+import type { Product, Category } from "@/types/database";
 import { Plus, Edit2, Eye, EyeOff, Star } from "lucide-react";
 import { toast } from "sonner";
 
 export function AdminProductList() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [editProduct, setEditProduct] = useState<Partial<Product> | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchProducts();
+    fetchCategories();
   }, []);
+
+  async function fetchCategories() {
+    try {
+      const res = await fetch("/api/admin/categories");
+      if (res.ok) setCategories(await res.json());
+    } catch {}
+  }
 
   async function fetchProducts() {
     try {
@@ -80,6 +89,7 @@ export function AdminProductList() {
       slug: "",
       description: "",
       price: 0,
+      category_id: null,
       stock_quantity: 0,
       is_active: true,
       is_featured: false,
@@ -129,6 +139,20 @@ export function AdminProductList() {
                   value={editProduct?.description || ""}
                   onChange={(e) => setEditProduct({ ...editProduct, description: e.target.value })}
                 />
+              </div>
+              <div>
+                <Label>Category *</Label>
+                <select
+                  required
+                  className="w-full mt-1 h-9 rounded-lg border border-[var(--border-subtle)] bg-white px-3 text-sm"
+                  value={editProduct?.category_id || ""}
+                  onChange={(e) => setEditProduct({ ...editProduct, category_id: e.target.value || null })}
+                >
+                  <option value="">Select a category</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
+                </select>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -187,6 +211,8 @@ export function AdminProductList() {
               </div>
               <div className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
                 <span>{formatPrice(product.price)}</span>
+                <span>&middot;</span>
+                <span>{categories.find((c) => c.id === product.category_id)?.name || "No category"}</span>
                 <span>&middot;</span>
                 <span>{product.stock_quantity} in stock</span>
                 {product.stock_quantity < 5 && (
