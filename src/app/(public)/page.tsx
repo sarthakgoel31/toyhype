@@ -1,6 +1,6 @@
 import { createPublicClient } from "@/lib/supabase/server";
 import { HeroSection } from "@/components/home/hero-section";
-import { CategoryGrid } from "@/components/home/category-grid";
+import { HowItWorks } from "@/components/home/how-it-works";
 import { FeaturedProducts } from "@/components/home/featured-products";
 import { ValueProps } from "@/components/home/value-props";
 import { TrustBanner } from "@/components/home/trust-banner";
@@ -26,7 +26,7 @@ export default async function HomePage() {
       <Navbar />
       <main className="flex-1">
         <HeroSection />
-        <CategoryGrid />
+        <HowItWorks />
         <FeaturedProducts products={(featuredProducts || []) as Product[]} />
         <TrustBanner />
         <ValueProps />
