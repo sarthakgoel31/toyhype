@@ -7,7 +7,7 @@ export async function GET() {
 
     const { data, error } = await supabase
       .from("orders")
-      .select("*")
+      .select("*, items:order_items(*)")
       .order("created_at", { ascending: false })
       .limit(100);
 
