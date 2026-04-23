@@ -39,7 +39,10 @@ export type OrderStatus =
   | "SHIPPED"
   | "DELIVERED"
   | "PAYMENT_FAILED"
-  | "CANCELLED";
+  | "CANCELLED"
+  | "RTO"
+  | "RETURN_REQUESTED"
+  | "RETURNED";
 
 export interface ShippingAddress {
   line1: string;

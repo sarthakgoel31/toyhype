@@ -11,6 +11,7 @@ import { format } from "date-fns";
 import {
   Truck, CheckCircle, Bell, XCircle, ChevronDown, ChevronUp,
   Phone, Mail, MapPin, CreditCard, Banknote, Copy,
+  RotateCcw, PackageX, PackageCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -21,6 +22,9 @@ const statusColors: Record<string, string> = {
   DELIVERED: "bg-[var(--status-delivered-bg)] text-[var(--status-delivered-text)]",
   PAYMENT_FAILED: "bg-[var(--status-cancelled-bg)] text-[var(--status-cancelled-text)]",
   CANCELLED: "bg-[var(--status-cancelled-bg)] text-[var(--status-cancelled-text)]",
+  RTO: "bg-orange-100 text-orange-800",
+  RETURN_REQUESTED: "bg-purple-100 text-purple-800",
+  RETURNED: "bg-gray-100 text-gray-800",
 };
 
 type OrderWithItems = Order & { items?: OrderItem[] };
@@ -94,11 +98,12 @@ export function AdminOrderList() {
   }
 
   async function cancelOrder(orderId: string) {
+    const reason = prompt("Cancellation reason (optional):");
     try {
       const res = await fetch(`/api/admin/orders/${orderId}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "CANCELLED" }),
+        body: JSON.stringify({ status: "CANCELLED", reason: reason || "Cancelled by admin" }),
       });
       if (res.ok) {
         toast.success("Order cancelled");
@@ -301,39 +306,93 @@ export function AdminOrderList() {
                 )}
 
                 {order.status === "CONFIRMED" && (
-                  <div className="flex items-center gap-2">
-                    <Input
-                      placeholder="Tracking number (Shiprocket / courier)"
-                      className="flex-1"
-                      value={trackingInputs[order.id] || ""}
-                      onChange={(e) =>
-                        setTrackingInputs({ ...trackingInputs, [order.id]: e.target.value })
-                      }
-                    />
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Input
+                        placeholder="Tracking number (Shiprocket / courier)"
+                        className="flex-1"
+                        value={trackingInputs[order.id] || ""}
+                        onChange={(e) =>
+                          setTrackingInputs({ ...trackingInputs, [order.id]: e.target.value })
+                        }
+                      />
+                      <Button
+                        size="sm"
+                        onClick={() =>
+                          updateStatus(order.id, "SHIPPED", trackingInputs[order.id])
+                        }
+                      >
+                        <Truck className="w-4 h-4 mr-1" />
+                        Ship
+                      </Button>
+                    </div>
                     <Button
                       size="sm"
-                      onClick={() =>
-                        updateStatus(order.id, "SHIPPED", trackingInputs[order.id])
-                      }
+                      variant="ghost"
+                      className="text-[var(--text-muted)] hover:text-[var(--accent-red)]"
+                      onClick={() => cancelOrder(order.id)}
                     >
-                      <Truck className="w-4 h-4 mr-1" />
-                      Ship
+                      <XCircle className="w-4 h-4 mr-1" />
+                      Cancel Order
                     </Button>
                   </div>
                 )}
 
                 {order.status === "SHIPPED" && (
-                  <div>
+                  <div className="space-y-2">
                     {order.tracking_number && (
-                      <p className="text-xs text-[var(--text-muted)] mb-2">
+                      <p className="text-xs text-[var(--text-muted)]">
                         Tracking: <span className="font-mono">{order.tracking_number}</span>
                       </p>
                     )}
-                    <Button size="sm" onClick={() => updateStatus(order.id, "DELIVERED")}>
-                      <CheckCircle className="w-4 h-4 mr-1" />
-                      Mark Delivered
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" onClick={() => updateStatus(order.id, "DELIVERED")}>
+                        <CheckCircle className="w-4 h-4 mr-1" />
+                        Mark Delivered
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-orange-600 border-orange-300 hover:bg-orange-50"
+                        onClick={() => updateStatus(order.id, "RTO")}
+                      >
+                        <PackageX className="w-4 h-4 mr-1" />
+                        RTO (Refused)
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {order.status === "DELIVERED" && (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-purple-600 border-purple-300 hover:bg-purple-50"
+                      onClick={() => updateStatus(order.id, "RETURN_REQUESTED")}
+                    >
+                      <RotateCcw className="w-4 h-4 mr-1" />
+                      Return Requested
                     </Button>
                   </div>
+                )}
+
+                {order.status === "RETURN_REQUESTED" && (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => updateStatus(order.id, "RETURNED")}
+                    >
+                      <PackageCheck className="w-4 h-4 mr-1" />
+                      Mark Returned (Received)
+                    </Button>
+                  </div>
+                )}
+
+                {(order.status === "RTO" || order.status === "RETURNED") && order.admin_notes && (
+                  <p className="text-xs text-[var(--text-muted)]">
+                    Note: {order.admin_notes}
+                  </p>
                 )}
               </div>
             )}

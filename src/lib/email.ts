@@ -114,6 +114,69 @@ export async function sendPaymentReminder(order: Order) {
   );
 }
 
+export async function sendOrderCancelled(order: Order, reason?: string) {
+  const isCOD = order.payment_status === "cod";
+
+  await sendMail(
+    order.customer_email,
+    `Order Cancelled - ${order.order_number}`,
+    `
+    <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px">
+      <div style="text-align:center;margin-bottom:30px">
+        <h1 style="color:#3b82f6;margin:0">ToyHype</h1>
+      </div>
+      <h2 style="color:#18181b">Order Cancelled</h2>
+      <p style="color:#52525b">Hi ${order.customer_name}, your order <strong>${order.order_number}</strong> has been cancelled.</p>
+      ${reason ? `<div style="background:#fef2f2;padding:16px;border-radius:12px;margin:20px 0;border:1px solid #fca5a5"><p style="margin:0;font-size:14px;color:#991b1b">Reason: ${reason}</p></div>` : ""}
+      ${!isCOD && order.payment_status === "paid" ? `<div style="background:#f0fdf4;padding:16px;border-radius:12px;margin:20px 0;border:1px solid #86efac"><p style="margin:0;font-size:14px;color:#166534">Your refund will be processed within 5-7 business days to your original payment method.</p></div>` : ""}
+      <div style="text-align:center;margin:30px 0">
+        <a href="${BASE_URL}/products" style="background:#3b82f6;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:bold">Shop Again</a>
+      </div>
+      <p style="color:#52525b;font-size:14px">Questions? WhatsApp us at <strong>+91 8839081997</strong> or DM <a href="https://instagram.com/dhandhaonground" style="color:#3b82f6">@dhandhaonground</a>.</p>
+      <p style="margin-top:30px;font-size:12px;color:#a1a1aa;text-align:center">ToyHype - Cool Toys for the Kid in You</p>
+    </div>
+    `
+  );
+}
+
+export async function sendReturnUpdate(order: Order, status: "RETURN_REQUESTED" | "RETURNED") {
+  const isReturned = status === "RETURNED";
+  const isCOD = order.payment_status === "cod";
+
+  await sendMail(
+    order.customer_email,
+    isReturned
+      ? `Return Complete - ${order.order_number}`
+      : `Return Request Received - ${order.order_number}`,
+    `
+    <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px">
+      <div style="text-align:center;margin-bottom:30px">
+        <h1 style="color:#3b82f6;margin:0">ToyHype</h1>
+      </div>
+      <h2 style="color:#18181b">${isReturned ? "Return Complete" : "Return Request Received"}</h2>
+      ${
+        isReturned
+          ? `<p style="color:#52525b">Hi ${order.customer_name}, we've received your returned item for order <strong>${order.order_number}</strong>.</p>
+             <div style="background:#f0fdf4;padding:16px;border-radius:12px;margin:20px 0;border:1px solid #86efac">
+               <p style="margin:0;font-size:14px;color:#166534">${isCOD ? "Your refund will be processed via UPI/bank transfer within 3-5 business days. We'll reach out for your payment details." : "Your refund of Rs " + Math.round(order.total_amount / 100) + " will be processed within 5-7 business days to your original payment method."}</p>
+             </div>`
+          : `<p style="color:#52525b">Hi ${order.customer_name}, we've received your return request for order <strong>${order.order_number}</strong>.</p>
+             <div style="background:#eff6ff;padding:16px;border-radius:12px;margin:20px 0;border:1px solid #93c5fd">
+               <p style="margin:0;font-size:14px;color:#1e40af"><strong>Next steps:</strong></p>
+               <ol style="margin:8px 0 0;padding-left:20px;color:#1e40af;font-size:14px">
+                 <li>Pack the product in original packaging</li>
+                 <li>Ship it to the address we'll share via WhatsApp/email</li>
+                 <li>Once we receive and inspect, your refund will be processed</li>
+               </ol>
+             </div>`
+      }
+      <p style="color:#52525b;font-size:14px">Questions? WhatsApp us at <strong>+91 8839081997</strong> or DM <a href="https://instagram.com/dhandhaonground" style="color:#3b82f6">@dhandhaonground</a>.</p>
+      <p style="margin-top:30px;font-size:12px;color:#a1a1aa;text-align:center">ToyHype - Cool Toys for the Kid in You</p>
+    </div>
+    `
+  );
+}
+
 export async function sendOrderShipped(
   order: Order,
   trackingNumber: string,

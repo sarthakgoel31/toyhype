@@ -22,4 +22,7 @@ export const ORDER_STATUS_LABELS: Record<string, string> = {
   DELIVERED: "Delivered",
   PAYMENT_FAILED: "Payment Failed",
   CANCELLED: "Cancelled",
+  RTO: "RTO (Returned)",
+  RETURN_REQUESTED: "Return Requested",
+  RETURNED: "Returned",
 };
