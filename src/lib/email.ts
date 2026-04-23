@@ -83,6 +83,39 @@ export async function sendAdminNotification(order: Order, items: OrderItem[]) {
   }
 }
 
+export async function sendPaymentReminder(order: Order) {
+  try {
+    await getResend().emails.send({
+      from: FROM_EMAIL,
+      to: order.customer_email,
+      subject: `Complete Your Payment - ${order.order_number}`,
+      html: `
+        <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px">
+          <div style="text-align:center;margin-bottom:30px">
+            <h1 style="color:#3b82f6;margin:0">ToyHype</h1>
+          </div>
+          <h2 style="color:#18181b">Your Order is Waiting! ⏳</h2>
+          <p style="color:#52525b">Hi ${order.customer_name}, looks like your payment for order <strong>${order.order_number}</strong> wasn't completed.</p>
+          <div style="background:#fef3c7;padding:16px;border-radius:12px;margin:20px 0;border:1px solid #fbbf24">
+            <p style="margin:0;font-size:14px;color:#92400e">Your toys are still in the cart! Complete the payment to grab them before they're gone.</p>
+          </div>
+          <div style="background:#f5f5f5;padding:16px;border-radius:12px;margin:20px 0">
+            <p style="margin:0;font-size:14px;color:#52525b">Order Total</p>
+            <p style="margin:4px 0 0;font-weight:bold;font-size:24px;color:#18181b">Rs ${Math.round(order.total_amount / 100)}</p>
+          </div>
+          <div style="text-align:center;margin:30px 0">
+            <a href="${BASE_URL}/products" style="background:#3b82f6;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:bold">Shop Again</a>
+          </div>
+          <p style="color:#52525b;font-size:14px">Need help? Reach out on WhatsApp at <strong>+91 8839081997</strong> or DM us on <a href="https://instagram.com/dhandhaonground" style="color:#3b82f6">@dhandhaonground</a>.</p>
+          <p style="margin-top:30px;font-size:12px;color:#a1a1aa;text-align:center">ToyHype - Cool Toys for the Kid in You</p>
+        </div>
+      `,
+    });
+  } catch (err) {
+    console.error("Failed to send payment reminder:", err);
+  }
+}
+
 export async function sendOrderShipped(
   order: Order,
   trackingNumber: string,

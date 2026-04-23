@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { formatPrice, ORDER_STATUS_LABELS } from "@/lib/order-utils";
 import type { Order } from "@/types/database";
 import { format } from "date-fns";
-import { Package, Truck, CheckCircle } from "lucide-react";
+import { Package, Truck, CheckCircle, Bell, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
 const statusColors: Record<string, string> = {
@@ -23,6 +23,7 @@ export function AdminOrderList() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [trackingInputs, setTrackingInputs] = useState<Record<string, string>>({});
+  const [sendingReminder, setSendingReminder] = useState<string | null>(null);
 
   useEffect(() => {
     fetchOrders();
@@ -57,6 +58,42 @@ export function AdminOrderList() {
     }
   }
 
+  async function sendReminder(orderId: string) {
+    setSendingReminder(orderId);
+    try {
+      const res = await fetch(`/api/admin/orders/${orderId}/remind`, {
+        method: "POST",
+      });
+      if (res.ok) {
+        toast.success("Payment reminder sent!");
+      } else {
+        const err = await res.json();
+        toast.error(err.error || "Failed to send reminder");
+      }
+    } catch {
+      toast.error("Error sending reminder");
+    }
+    setSendingReminder(null);
+  }
+
+  async function cancelOrder(orderId: string) {
+    try {
+      const res = await fetch(`/api/admin/orders/${orderId}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "CANCELLED" }),
+      });
+      if (res.ok) {
+        toast.success("Order cancelled");
+        fetchOrders();
+      } else {
+        toast.error("Failed to cancel order");
+      }
+    } catch {
+      toast.error("Error cancelling order");
+    }
+  }
+
   if (loading) return <p className="text-[var(--text-muted)]">Loading orders...</p>;
   if (orders.length === 0) return <p className="text-[var(--text-muted)]">No orders yet.</p>;
 
@@ -83,6 +120,29 @@ export function AdminOrderList() {
           </div>
 
           {/* Actions */}
+          {order.status === "PAYMENT_PENDING" && (
+            <div className="flex items-center gap-2 pt-2 border-t border-[var(--border-subtle)]">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => sendReminder(order.id)}
+                disabled={sendingReminder === order.id}
+              >
+                <Bell className="w-4 h-4 mr-1" />
+                {sendingReminder === order.id ? "Sending..." : "Send Reminder"}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-[var(--accent-red)] border-[var(--accent-red)] hover:bg-red-50"
+                onClick={() => cancelOrder(order.id)}
+              >
+                <XCircle className="w-4 h-4 mr-1" />
+                Cancel
+              </Button>
+            </div>
+          )}
+
           {order.status === "CONFIRMED" && (
             <div className="flex items-center gap-2 pt-2 border-t border-[var(--border-subtle)]">
               <Input
