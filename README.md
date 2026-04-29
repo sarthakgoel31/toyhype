@@ -4,6 +4,8 @@
 
 **Live at [toyhype.vercel.app](https://toyhype.vercel.app)**
 
+![ToyHype Dashboard](docs/toyhype-desktop.png)
+
 ToyHype is a full-stack e-commerce platform purpose-built for the Indian market where Cash on Delivery still dominates online purchases. Product catalog, cart, multi-payment checkout (Razorpay + COD), order tracking, and a complete admin panel. Built on Next.js 16 with React 19 server components and Supabase as the backend.
 
 ## Features
