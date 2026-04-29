@@ -1,8 +1,10 @@
 # ToyHype
 
-**Modern e-commerce platform with COD support, built for the Indian market.**
+**COD-first e-commerce platform for the Indian market.**
 
-ToyHype is a full-stack e-commerce application with product catalog, cart management, multi-payment checkout (Razorpay + Cash on Delivery), order tracking, and a complete admin panel. Built on Next.js 16 with React 19 server components and Supabase as the backend.
+**Live at [toyhype.vercel.app](https://toyhype.vercel.app)**
+
+ToyHype is a full-stack e-commerce platform purpose-built for the Indian market where Cash on Delivery still dominates online purchases. Product catalog, cart, multi-payment checkout (Razorpay + COD), order tracking, and a complete admin panel. Built on Next.js 16 with React 19 server components and Supabase as the backend.
 
 ## Features
 
@@ -10,10 +12,10 @@ ToyHype is a full-stack e-commerce application with product catalog, cart manage
 - **Cart and Checkout** -- Persistent cart with address collection, coupon support, and order summary
 - **Dual Payment Modes** -- Razorpay integration for online payments and Cash on Delivery for trust-first buyers
 - **Order Tracking** -- Real-time order status updates with tracking page for customers
-- **Shipping Integration** -- Shiprocket API for automated shipping label generation and delivery tracking
+- **Shipping** -- Manual tracking number entry with courier selection
 - **Admin Panel** -- Protected admin dashboard for product management, order fulfillment, and inventory control
 - **Transactional Emails** -- Order confirmation and shipping updates via Resend + React Email templates
-- **Responsive Design** -- Mobile-first UI with shadcn/ui components, Motion animations, and dark mode support
+- **Responsive Design** -- Mobile-first UI with shadcn/ui components and Motion animations
 
 ## Tech Stack
 
@@ -24,7 +26,7 @@ ToyHype is a full-stack e-commerce application with product catalog, cart manage
 | Database | Supabase (PostgreSQL) |
 | Auth | Supabase Auth + JWT (jose) |
 | Payments | Razorpay |
-| Shipping | Shiprocket |
+| Shipping | Manual (courier + tracking number) |
 | Email | Resend, React Email |
 | Validation | Zod 4 |
 | Deployment | Vercel |
@@ -52,8 +54,7 @@ npm install
 
 # Set up environment variables
 cp .env.example .env.local
-# Fill in: SUPABASE_URL, SUPABASE_ANON_KEY, RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET,
-#          SHIPROCKET_EMAIL, SHIPROCKET_PASSWORD, RESEND_API_KEY
+# Fill in: SUPABASE_URL, SUPABASE_ANON_KEY, RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET, RESEND_API_KEY
 
 # Run development server
 npm run dev
@@ -69,8 +70,6 @@ Open [http://localhost:3000](http://localhost:3000) to browse the store.
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key |
 | `RAZORPAY_KEY_ID` | Razorpay API key |
 | `RAZORPAY_KEY_SECRET` | Razorpay secret |
-| `SHIPROCKET_EMAIL` | Shiprocket account email |
-| `SHIPROCKET_PASSWORD` | Shiprocket account password |
 | `RESEND_API_KEY` | Resend email API key |
 
 ---
