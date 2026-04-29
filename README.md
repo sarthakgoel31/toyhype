@@ -1,36 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ToyHype
 
-## Getting Started
+**Modern e-commerce platform with COD support, built for the Indian market.**
 
-First, run the development server:
+ToyHype is a full-stack e-commerce application with product catalog, cart management, multi-payment checkout (Razorpay + Cash on Delivery), order tracking, and a complete admin panel. Built on Next.js 16 with React 19 server components and Supabase as the backend.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Features
+
+- **Product Catalog** -- Categorized product listings with search, filtering, and dynamic routing
+- **Cart and Checkout** -- Persistent cart with address collection, coupon support, and order summary
+- **Dual Payment Modes** -- Razorpay integration for online payments and Cash on Delivery for trust-first buyers
+- **Order Tracking** -- Real-time order status updates with tracking page for customers
+- **Shipping Integration** -- Shiprocket API for automated shipping label generation and delivery tracking
+- **Admin Panel** -- Protected admin dashboard for product management, order fulfillment, and inventory control
+- **Transactional Emails** -- Order confirmation and shipping updates via Resend + React Email templates
+- **Responsive Design** -- Mobile-first UI with shadcn/ui components, Motion animations, and dark mode support
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 16, React 19 |
+| Styling | Tailwind CSS 4, shadcn/ui, Motion |
+| Database | Supabase (PostgreSQL) |
+| Auth | Supabase Auth + JWT (jose) |
+| Payments | Razorpay |
+| Shipping | Shiprocket |
+| Email | Resend, React Email |
+| Validation | Zod 4 |
+| Deployment | Vercel |
+
+## Project Structure
+
+```
+src/
+  app/
+    (public)/          -- Storefront pages (catalog, cart, checkout, tracking)
+    (admin)/           -- Admin dashboard (products, orders, settings)
+    api/               -- API routes (payments, webhooks, admin, orders)
+  components/          -- Shared UI components
+  lib/                 -- Utilities, Supabase client, helpers
+supabase/              -- Database migrations and seed data
+emails/                -- React Email templates
+public/                -- Static assets
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Quick Start
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Install dependencies
+npm install
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Set up environment variables
+cp .env.example .env.local
+# Fill in: SUPABASE_URL, SUPABASE_ANON_KEY, RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET,
+#          SHIPROCKET_EMAIL, SHIPROCKET_PASSWORD, RESEND_API_KEY
 
-## Learn More
+# Run development server
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Open [http://localhost:3000](http://localhost:3000) to browse the store.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Environment Variables
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Variable | Purpose |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key |
+| `RAZORPAY_KEY_ID` | Razorpay API key |
+| `RAZORPAY_KEY_SECRET` | Razorpay secret |
+| `SHIPROCKET_EMAIL` | Shiprocket account email |
+| `SHIPROCKET_PASSWORD` | Shiprocket account password |
+| `RESEND_API_KEY` | Resend email API key |
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Built with [Claude Code](https://claude.ai/code)
