@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="logo.png" alt="ToyHype Logo" width="120" />
+</p>
+
 # ToyHype
 
 **COD-first e-commerce platform for the Indian market.**
