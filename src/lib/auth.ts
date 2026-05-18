@@ -1,19 +1,12 @@
 import bcrypt from "bcryptjs";
 import { SignJWT, jwtVerify } from "jose";
 
-const DEV_SESSION_SECRET = "REDACTED";
-
 const getSecret = () => {
   const secret = process.env.ADMIN_SESSION_SECRET;
-  if (
-    process.env.NODE_ENV === "production" &&
-    (!secret || secret === DEV_SESSION_SECRET)
-  ) {
-    throw new Error(
-      "ADMIN_SESSION_SECRET must be changed from the default value in production"
-    );
+  if (!secret) {
+    throw new Error("ADMIN_SESSION_SECRET env var is required");
   }
-  return new TextEncoder().encode(secret || DEV_SESSION_SECRET);
+  return new TextEncoder().encode(secret);
 };
 
 export async function verifyPin(pin: string): Promise<boolean> {

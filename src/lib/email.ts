@@ -16,8 +16,14 @@ function getTransporter() {
   return transporter;
 }
 
-const FROM_EMAIL = `ToyHype <${process.env.GMAIL_USER || "REDACTED"}>`;
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "sarthak.goel01@gmail.com";
+if (!process.env.GMAIL_USER) {
+  throw new Error("GMAIL_USER env var is required");
+}
+if (!process.env.ADMIN_EMAIL) {
+  throw new Error("ADMIN_EMAIL env var is required");
+}
+const FROM_EMAIL = `ToyHype <${process.env.GMAIL_USER}>`;
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
 async function sendMail(to: string, subject: string, html: string) {

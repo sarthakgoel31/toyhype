@@ -42,7 +42,7 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               <li><Link href="/track" className="hover:text-white transition-colors">Track Order</Link></li>
               <li><Link href="/returns" className="hover:text-white transition-colors">Return & Refund Policy</Link></li>
-              <li><a href="mailto:REDACTED" className="hover:text-white transition-colors">Contact Us</a></li>
+              <li><a href="mailto:dhandhaonground@gmail.com" className="hover:text-white transition-colors">Contact Us</a></li>
             </ul>
           </div>
         </div>

@@ -28,7 +28,7 @@ export default function ReturnsPage() {
             <section>
               <h2 className="text-xl font-bold text-[var(--text-primary)] mb-3">How to Request a Return</h2>
               <ol className="list-decimal list-inside space-y-3 ml-1">
-                <li>Email us at <a href="mailto:REDACTED" className="text-[var(--accent-blue)] font-semibold hover:underline">REDACTED</a> within 7 days of delivery.</li>
+                <li>Email us at <a href="mailto:dhandhaonground@gmail.com" className="text-[var(--accent-blue)] font-semibold hover:underline">dhandhaonground@gmail.com</a> within 7 days of delivery.</li>
                 <li>Include your <strong>order number</strong> and <strong>reason for return</strong> in the email.</li>
                 <li>We will reply within 24-48 hours with return instructions.</li>
                 <li>Ship the item back in its original packaging.</li>
@@ -65,8 +65,8 @@ export default function ReturnsPage() {
                 <h2 className="text-lg font-bold text-[var(--text-primary)] mb-1">Contact Us</h2>
                 <p>For any questions about returns, refunds, or your order:</p>
                 <p className="mt-2">
-                  <a href="mailto:REDACTED" className="text-[var(--accent-blue)] font-bold hover:underline text-lg">
-                    REDACTED
+                  <a href="mailto:dhandhaonground@gmail.com" className="text-[var(--accent-blue)] font-bold hover:underline text-lg">
+                    dhandhaonground@gmail.com
                   </a>
                 </p>
                 <p className="text-sm text-[var(--text-muted)] mt-1">We typically respond within 24 hours.</p>
